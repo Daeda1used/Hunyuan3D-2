@@ -336,7 +336,7 @@ class Hunyuan3DDiTPipeline:
 
         # scale the initial noise by the standard deviation required by the scheduler
         latents = latents * getattr(self.scheduler, 'init_noise_sigma', 1.0)
-        return latents
+        return latents # (1,3072,64)
 
     def prepare_image(self, image):
         if isinstance(image, str) and not os.path.exists(image):
@@ -518,6 +518,8 @@ class Hunyuan3DDiTFlowMatchingPipeline(Hunyuan3DDiTPipeline):
         num_chunks=8000,
         output_type: Optional[str] = "trimesh",
         enable_pbar=True,
+        graspmodel_str=None,
+        view_index=None,
         **kwargs,
     ) -> List[List[trimesh.Trimesh]]:
         callback = kwargs.pop("callback", None)
@@ -548,6 +550,7 @@ class Hunyuan3DDiTFlowMatchingPipeline(Hunyuan3DDiTPipeline):
             device,
             sigmas=sigmas,
         )
+        # get init latent noise
         latents = self.prepare_latents(batch_size, dtype, device, generator)
 
         guidance = None
@@ -578,6 +581,16 @@ class Hunyuan3DDiTFlowMatchingPipeline(Hunyuan3DDiTPipeline):
             if callback is not None and i % callback_steps == 0:
                 step_idx = i // getattr(self.scheduler, "order", 1)
                 callback(step_idx, t, outputs)
+
+        # **保存 Latents**
+
+        # latent_base_save_folder = '/home/WorkSpace/PointCloud_Reconstruction/Hunyuan3D-2/assets/outputs/GraspNet1b_latents'
+        # latents_file_name = f"{graspmodel_str}_view_{view_index}.pt"
+        # latents_save_path = os.path.join(latent_base_save_folder, latents_file_name)
+        # torch.save(latents, latents_save_path)
+        # print("Latents saved to: ", latents_save_path)
+
+
 
         return self._export(
             latents,
