@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Meshs / PointClouds
+*.glb
+*.ply
+
 # Distribution / packaging
 .Python
 assets/
